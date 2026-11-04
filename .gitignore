@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+data/bookings.json
+data/messages.json
+data/outbox/
+*.log
+.DS_Store

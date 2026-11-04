@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import { prose } from '../data/copy.js';
+import { reviews, starOnlyNames } from '../data/reviews.js';
+import { salon } from '../data/salon.js';
+
+const description =
+  "Google reviews for Gab's hair room in Kettering. 25 reviews, all 5 stars, checked on 4 November 2026.";
+---
+<Base title="Reviews" description={description} path="/reviews" crumbs={[{ name: 'Reviews', path: '/reviews' }]}>
+  <Header path="/reviews">
+    <article class="prose">
+      <h1>Reviews</h1>
+      <p class="stars" aria-label="5 stars from 25 Google reviews">★★★★★</p>
+      <p>{prose.reviewsIntro}</p>
+      <p class="meta">Dates are the ones Google showed on {salon.ratingChecked}.</p>
+      <div class="review-list">
+        {reviews.map((review) => (
+          <article class="review">
+            <p class="stars" aria-label="5 stars">★★★★★</p>
+            <h2>{review.name}</h2>
+            <p class="meta">{review.when}</p>
+            <p>{review.text}</p>
+            {review.detail && <p>{review.detail}</p>}
+            {review.services && <p class="meta">Services tagged: {review.services.join(', ')}</p>}
+            {review.reply && <p class="reply">Gabi replied: {review.reply}</p>}
+          </article>
+        ))}
+      </div>
+      <h2>5 stars, no written comment</h2>
+      <p>{starOnlyNames.join(', ')}.</p>
+      <p>
+        <a href={salon.mapsUrl}>Read them on Google</a>
+      </p>
+    </article>
+  </Header>
+</Base>

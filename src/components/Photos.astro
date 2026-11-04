@@ -1,0 +1,27 @@
+---
+import { Image } from 'astro:assets';
+import { photos } from '../data/photos.js';
+
+const { files = null, priority = false } = Astro.props;
+const modules = import.meta.glob('../assets/gallery/*.webp', { eager: true });
+const chosen = files ? photos.filter((photo) => files.includes(photo.file)) : photos;
+const items = chosen.map((photo) => {
+  const key = Object.keys(modules).find((item) => item.endsWith(`/${photo.file}.webp`));
+  return { ...photo, src: modules[key].default };
+});
+---
+<div class={files ? 'mini-photos' : 'photo-grid'}>
+  {items.map((photo, index) => (
+    <figure>
+      <Image
+        src={photo.src}
+        alt={photo.alt}
+        widths={[360, 720, 1100]}
+        sizes={files ? '(max-width: 860px) 100vw, 32vw' : '(max-width: 860px) 100vw, 30vw'}
+        loading={priority && index === 0 ? 'eager' : 'lazy'}
+        fetchpriority={priority && index === 0 ? 'high' : 'auto'}
+      />
+      <figcaption>{photo.alt}</figcaption>
+    </figure>
+  ))}
+</div>

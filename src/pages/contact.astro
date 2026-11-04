@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import { prose } from '../data/copy.js';
+import { hoursRows, salon } from '../data/salon.js';
+const hours = hoursRows();
+const description =
+  "Contact Gab's hair room at 30 Leicester Close, Kettering, NN16 8EZ. Call 07512 827223 or send a message.";
+const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(`${salon.street} ${salon.locality} ${salon.postalCode}`)}&z=16&output=embed`;
+---
+<Base title="Contact" description={description} path="/contact" crumbs={[{ name: 'Contact', path: '/contact' }]}>
+  <Header path="/contact">
+    <article class="prose">
+      <h1>Contact</h1>
+      <p>{prose.contactIntro}</p>
+      <div class="grid-2">
+        <div>
+          <p>
+            <strong>{salon.name}</strong><br />
+            {salon.street}<br />
+            {salon.locality}<br />
+            {salon.region}<br />
+            {salon.postalCode}
+          </p>
+          <p>
+            <a href={`tel:${salon.phoneTel}`}>{salon.phoneDisplay}</a><br />
+            <a href={`mailto:${salon.email}`}>{salon.email}</a>
+          </p>
+          <p>
+            <a href={salon.mapsUrl}>Open in Google Maps</a><br />
+            <a href={salon.facebook}>Facebook</a><br />
+            <a href={salon.tiktok}>TikTok @gabs_hair_room</a>
+          </p>
+          <div class="hours">
+            {hours.map((row) => (
+              <div>
+                <span>{row.name}</span>
+                <span class={row.closed ? 'closed' : ''}>{row.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <form class="note" method="post" action="/api/contact">
+          <p id="form-status" class="meta" role="status"></p>
+          <label>
+            <span>Your name</span>
+            <input name="name" type="text" required maxlength="80" autocomplete="name" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" required maxlength="120" autocomplete="email" />
+          </label>
+          <label>
+            <span>Phone</span>
+            <input name="phone" type="tel" required maxlength="30" autocomplete="tel" />
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="message" required maxlength="800"></textarea>
+          </label>
+          <label class="honeypot">
+            Company
+            <input name="company" type="text" tabindex="-1" autocomplete="off" />
+          </label>
+          <button class="primary" type="submit">Send to Gabi</button>
+        </form>
+      </div>
+      <iframe class="map" title="Map of 30 Leicester Close, Kettering" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src={mapSrc}></iframe>
+    </article>
+  </Header>
+</Base>
+<script>
+  const form = document.querySelector('form.note');
+  const status = document.querySelector('#form-status');
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    status.textContent = 'Sending…';
+    const body = Object.fromEntries(new FormData(form));
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    status.textContent = data.message || data.error || 'Try again, or call the salon.';
+    if (response.ok) form.reset();
+  });
+</script>

@@ -1,0 +1,23 @@
+---
+import { hoursRows, salon } from '../data/salon.js';
+const rows = hoursRows();
+---
+<footer class="site-footer">
+  <strong>{salon.name}</strong>
+  <p>
+    {salon.street}, {salon.locality}, {salon.region}, {salon.postalCode}<br />
+    <a href={`tel:${salon.phoneTel}`}>{salon.phoneDisplay}</a>
+    · <a href={`mailto:${salon.email}`}>{salon.email}</a>
+  </p>
+  <p>
+    {rows.map((row) => `${row.name.slice(0, 3)} ${row.closed ? 'closed' : row.text}`).join(' · ')}
+  </p>
+  <p>
+    <a href={salon.mapsUrl}>Google Maps</a>
+    · <a href={salon.facebook}>Facebook</a>
+    · <a href={salon.tiktok}>TikTok</a>
+    · <a href="/privacy">Privacy</a>
+    · <a href="/book">Book a time</a>
+  </p>
+  <p class="fine">Hair salon in Kettering, North Northamptonshire. One chair. Appointments.</p>
+</footer>

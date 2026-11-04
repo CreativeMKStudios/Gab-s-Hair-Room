@@ -1,0 +1,181 @@
+---
+export const prerender = false;
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import { prose } from '../data/copy.js';
+import { formatMinutes, services } from '../data/salon.js';
+import { isoDateInLondon } from '../lib/time.js';
+
+const description =
+  "Book Gab's hair room in Kettering. Pick a service, a day, and a time. Pay in the salon, or pay a price Gabi has already given you.";
+const today = isoDateInLondon(new Date());
+const preselect = services.some((service) => service.id === Astro.url.searchParams.get('service'))
+  ? Astro.url.searchParams.get('service')
+  : services[0].id;
+---
+<Base title="Book a time" description={description} path="/book" crumbs={[{ name: 'Book', path: '/book' }]}>
+  <Header path="/book">
+    <article class="prose">
+      <h1>Book a time</h1>
+      <p>{prose.bookIntro}</p>
+      <p>{prose.bookPrice}</p>
+      <p id="cancel-note" class="meta" hidden>The card payment was cancelled. Your chair was not held. You can try again, or pay in the salon.</p>
+      <form class="book" method="post" action="/api/book">
+        <p id="book-status" class="error" role="status"></p>
+        <fieldset>
+          <legend class="field-label">Service and price</legend>
+          <div class="choices">
+            {services.map((service) => (
+              <button
+                class="choice"
+                type="button"
+                data-service={service.id}
+                data-minutes={service.minutes}
+                aria-pressed={service.id === preselect ? 'true' : 'false'}
+              >
+                <strong>{service.name}</strong><br />
+                <small>{service.summary}</small><br />
+                <small>Time held: {formatMinutes(service.minutes)}</small><br />
+                <span class="price-tag">Pay in the salon</span>
+              </button>
+            ))}
+          </div>
+          <input type="hidden" name="service" value={preselect} />
+        </fieldset>
+        <label>
+          <span>Date</span>
+          <input name="date" type="date" required min={today} value={today} />
+        </label>
+        <div>
+          <span class="field-label" id="time-label">Time (UK)</span>
+          <div class="times" role="group" aria-labelledby="time-label"></div>
+          <input type="hidden" name="time" value="" />
+        </div>
+        <label>
+          <span>Your name</span>
+          <input name="name" type="text" required maxlength="80" autocomplete="name" />
+        </label>
+        <label>
+          <span>Email</span>
+          <input name="email" type="email" required maxlength="120" autocomplete="email" />
+        </label>
+        <label>
+          <span>Phone</span>
+          <input name="phone" type="tel" required maxlength="30" autocomplete="tel" />
+        </label>
+        <label>
+          <span>Note for Gabi</span>
+          <textarea name="notes" maxlength="500" placeholder="Hair length, colour, or anything she should know."></textarea>
+        </label>
+        <fieldset>
+          <legend class="field-label">How you will pay</legend>
+          <label class="pay-choice">
+            <input type="radio" name="payment" value="salon" checked />
+            <span><strong>Pay in the salon</strong><br /><small>No set price is taken now. You pay Gabi on the day.</small></span>
+          </label>
+          <label class="pay-choice">
+            <input type="radio" name="payment" value="online" />
+            <span><strong>Pay online</strong><br /><small>Only if Gabi has already told you the price. Enter that amount.</small></span>
+          </label>
+        </fieldset>
+        <label id="amount-wrap" hidden>
+          <span>Price she gave you (£)</span>
+          <input name="amount" type="number" min="5" max="400" step="0.01" inputmode="decimal" />
+        </label>
+        <label class="honeypot">
+          Company
+          <input name="company" type="text" tabindex="-1" autocomplete="off" />
+        </label>
+        <button class="primary" type="submit">Confirm booking</button>
+        <p class="fine">You need to book at least 90 minutes ahead. Sunday and Monday are closed. A confirmation is emailed to you and to the salon.</p>
+      </form>
+      <noscript>
+        <p>This form needs JavaScript to show the free times. Call or text 07512 827223 and Gabi will book you in.</p>
+      </noscript>
+    </article>
+  </Header>
+</Base>
+<script>
+  const form = document.querySelector('form.book');
+  if (form && new URLSearchParams(location.search).get('payment') === 'cancelled') {
+    const note = document.querySelector('#cancel-note');
+    if (note) note.hidden = false;
+  }
+  const status = document.querySelector('#book-status');
+  const serviceInput = form?.querySelector('input[name="service"]');
+  const timeInput = form?.querySelector('input[name="time"]');
+  const dateInput = form?.querySelector('input[name="date"]');
+  const times = form?.querySelector('.times');
+  const amountWrap = document.querySelector('#amount-wrap');
+
+  function selectedService() {
+    return serviceInput?.value || '';
+  }
+
+  document.querySelectorAll('.choice').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.choice').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+      button.setAttribute('aria-pressed', 'true');
+      if (serviceInput) serviceInput.value = button.getAttribute('data-service') || '';
+      loadTimes();
+    });
+  });
+
+  document.querySelectorAll('input[name="payment"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const online = form.querySelector('input[name="payment"]:checked')?.value === 'online';
+      if (amountWrap) amountWrap.hidden = !online;
+    });
+  });
+
+  async function loadTimes() {
+    if (!dateInput || !times || !timeInput) return;
+    timeInput.value = '';
+    times.textContent = 'Checking the book…';
+    const params = new URLSearchParams({ date: dateInput.value, service: selectedService() });
+    const response = await fetch(`/api/slots?${params}`);
+    const data = await response.json();
+    times.innerHTML = '';
+    if (!data.slots?.length) {
+      times.textContent = data.error || 'No free time that day.';
+      return;
+    }
+    data.slots.forEach((slot) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'time-btn';
+      button.textContent = slot;
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => {
+        times.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+        button.setAttribute('aria-pressed', 'true');
+        timeInput.value = slot;
+      });
+      times.append(button);
+    });
+  }
+
+  dateInput?.addEventListener('change', loadTimes);
+  loadTimes();
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!timeInput?.value) {
+      status.textContent = 'Pick a time.';
+      return;
+    }
+    status.textContent = 'Saving your booking…';
+    const body = Object.fromEntries(new FormData(form));
+    const response = await fetch('/api/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      status.textContent = data.error || 'That booking did not save.';
+      return;
+    }
+    location.href = data.url;
+  });
+</script>

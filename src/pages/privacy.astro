@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import { prose } from '../data/copy.js';
+import { salon } from '../data/salon.js';
+const description = "Privacy notice for bookings and messages sent to Gab's hair room in Kettering.";
+---
+<Base title="Privacy" description={description} path="/privacy" crumbs={[{ name: 'Privacy', path: '/privacy' }]}>
+  <Header path="/privacy">
+    <article class="prose">
+      <h1>Privacy</h1>
+      <p>{prose.privacyIntro}</p>
+      <h2>Who has your details</h2>
+      <p>
+        {salon.name} at {salon.street}, {salon.locality}, {salon.postalCode}. Email {salon.email}. Phone {salon.phoneDisplay}.
+      </p>
+      <h2>What we collect</h2>
+      <p>If you book or send a message, we keep your name, email, phone number, the service, the time, and anything you write in the note.</p>
+      <p>If you pay online, the card number goes to Stripe. This site does not store the card number.</p>
+      <h2>Why</h2>
+      <p>We use the details to hold your chair and to email you and Gabi a confirmation. We do not sell them. We do not send a mailing list.</p>
+      <h2>How long</h2>
+      <p>Booking notes are kept so Gabi can see who is coming. Ask her if you want your message deleted and she can remove it.</p>
+      <h2>Cookies</h2>
+      <p>The site does not set tracking cookies. A booking is saved on the server, not in an advert profile.</p>
+      <p>The contact page loads a Google map. Google may set its own cookies if you use that map.</p>
+    </article>
+  </Header>
+</Base>

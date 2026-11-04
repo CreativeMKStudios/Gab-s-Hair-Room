@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { confirmOnlinePayment, getBooking, money } from '../../lib/booking.js';
+import { fetchStripeSession } from '../../lib/stripe.js';
+import { salon } from '../../data/salon.js';
+
+const ref = Astro.url.searchParams.get('ref') || '';
+const sessionId = Astro.url.searchParams.get('session_id') || '';
+let booking = ref ? getBooking(ref) : null;
+if (booking && sessionId) {
+  const session = await fetchStripeSession(sessionId);
+  booking = (await confirmOnlinePayment(booking.id, session)) ?? booking;
+}
+const description = "Your booking at Gab's hair room.";
+const emailed = booking?.emailsSent === true;
+const payText =
+  booking?.payment === 'salon'
+    ? 'Pay in the salon, on the day.'
+    : booking?.status === 'paid'
+      ? `Paid online, ${money(booking.amountPence)}.`
+      : 'The online payment is not complete.';
+---
+<Base title="Booking confirmation" description={description} path="/booking/thanks">
+  <Header path="/booking/thanks">
+    <article class="prose">
+      {booking ? (
+        <>
+          <h1>{booking.status === 'pending_payment' ? 'Payment not finished' : 'You are booked'}</h1>
+          {booking.status === 'pending_payment' ? (
+            <p>The card payment did not finish, so this time is not held. Go back and choose pay in the salon, or try the card again.</p>
+          ) : (
+            <p>Gabi has this time on the book.</p>
+          )}
+          <div class="card">
+            <p><strong>{booking.serviceName}</strong></p>
+            <p>{booking.whenLabel} (UK time)</p>
+            <p>Time held: {booking.minutes} minutes</p>
+            <p>{payText}</p>
+            <p>{booking.name}<br />{booking.email}<br />{booking.phone}</p>
+            <p>Reference: {booking.id}</p>
+          </div>
+          <p>
+            {salon.street}, {salon.locality}, {salon.postalCode}. Customer parking is signed on the fence.
+          </p>
+          {emailed ? (
+            <p class="ok">A confirmation email has been sent to you and to the salon.</p>
+          ) : (
+            <p>
+              The booking is saved here, but the confirmation email did not leave this server. Text {salon.phoneDisplay} with your name and time so Gabi has it in her messages too.
+            </p>
+          )}
+          <p>If you need to move or cancel, call or text <a href={`tel:${salon.phoneTel}`}>{salon.phoneDisplay}</a>.</p>
+        </>
+      ) : (
+        <>
+          <h1>Booking not found</h1>
+          <p>That link does not match a booking on this server. Call or text {salon.phoneDisplay}.</p>
+        </>
+      )}
+    </article>
+  </Header>
+</Base>

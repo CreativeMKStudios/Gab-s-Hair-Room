@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import { prose } from '../data/copy.js';
+import { formatMinutes, services } from '../data/salon.js';
+
+const description =
+  "Services at Gab's hair room in Kettering: cuts, colour, highlights, balayage, perms, keratin, braids, updos, kids' cuts, and hair tinsel. Pay in the salon.";
+---
+<Base title="Services" description={description} path="/services" crumbs={[{ name: 'Services', path: '/services' }]}>
+  <Header path="/services">
+    <article class="prose">
+      <h1>Services and prices</h1>
+      <p>{prose.servicesIntro}</p>
+      <p>{prose.servicesPay}</p>
+      <p>{prose.servicesTime}</p>
+      <div class="service-list">
+        {services.map((service) => (
+          <article class="service" id={service.id}>
+            <h2>{service.name}</h2>
+            <p>{service.summary}</p>
+            <p class="meta">Time held: {formatMinutes(service.minutes)}</p>
+            <p class="price-tag">Price: pay in the salon</p>
+            <a href={`/book?service=${service.id}`}>Book {service.name}</a>
+          </article>
+        ))}
+      </div>
+    </article>
+  </Header>
+</Base>
