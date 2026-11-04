@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
+import { sitePath } from '../lib/paths.js';
 const description = "That page is not on Gab's hair room site.";
 ---
 <Base title="Page not found" description={description} path="/404">
@@ -9,8 +10,8 @@ const description = "That page is not on Gab's hair room site.";
       <h1>That page is missing</h1>
       <p>The link does not match a page on this site.</p>
       <div class="actions">
-        <a class="button" href="/">Go to the home page</a>
-        <a class="button ghost" href="/book">Book a time</a>
+        <a class="button" href={sitePath('/')}>Go to the home page</a>
+        <a class="button ghost" href={sitePath('/book')}>Book a time</a>
       </div>
     </article>
   </Header>

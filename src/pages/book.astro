@@ -1,17 +1,15 @@
 ---
-export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import { prose } from '../data/copy.js';
 import { formatMinutes, services } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 import { isoDateInLondon } from '../lib/time.js';
 
 const description =
   "Book Gab's hair room in Kettering. Pick a service, a day, and a time. Pay in the salon, or pay a price Gabi has already given you.";
 const today = isoDateInLondon(new Date());
-const preselect = services.some((service) => service.id === Astro.url.searchParams.get('service'))
-  ? Astro.url.searchParams.get('service')
-  : services[0].id;
+const preselect = services[0].id;
 ---
 <Base title="Book a time" description={description} path="/book" crumbs={[{ name: 'Book', path: '/book' }]}>
   <Header path="/book">
@@ -20,7 +18,7 @@ const preselect = services.some((service) => service.id === Astro.url.searchPara
       <p>{prose.bookIntro}</p>
       <p>{prose.bookPrice}</p>
       <p id="cancel-note" class="meta" hidden>The card payment was cancelled. Your chair was not held. You can try again, or pay in the salon.</p>
-      <form class="book" method="post" action="/api/book">
+      <form class="book" method="post" action={sitePath('/api/book')}>
         <p id="book-status" class="error" role="status"></p>
         <fieldset>
           <legend class="field-label">Service and price</legend>
@@ -97,7 +95,8 @@ const preselect = services.some((service) => service.id === Astro.url.searchPara
 </Base>
 <script>
   const form = document.querySelector('form.book');
-  if (form && new URLSearchParams(location.search).get('payment') === 'cancelled') {
+  const params = new URLSearchParams(location.search);
+  if (form && params.get('payment') === 'cancelled') {
     const note = document.querySelector('#cancel-note');
     if (note) note.hidden = false;
   }
@@ -107,6 +106,25 @@ const preselect = services.some((service) => service.id === Astro.url.searchPara
   const dateInput = form?.querySelector('input[name="date"]');
   const times = form?.querySelector('.times');
   const amountWrap = document.querySelector('#amount-wrap');
+  const londonToday = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/London',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  if (dateInput) {
+    dateInput.min = londonToday;
+    if (!dateInput.value || dateInput.value < londonToday) dateInput.value = londonToday;
+  }
+  const wanted = params.get('service');
+  if (wanted && /^[a-z0-9-]+$/.test(wanted) && serviceInput) {
+    const button = form.querySelector(`[data-service="${wanted}"]`);
+    if (button) {
+      form.querySelectorAll('.choice').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+      button.setAttribute('aria-pressed', 'true');
+      serviceInput.value = wanted;
+    }
+  }
 
   function selectedService() {
     return serviceInput?.value || '';
@@ -132,12 +150,19 @@ const preselect = services.some((service) => service.id === Astro.url.searchPara
     if (!dateInput || !times || !timeInput) return;
     timeInput.value = '';
     times.textContent = 'Checking the book…';
-    const params = new URLSearchParams({ date: dateInput.value, service: selectedService() });
-    const response = await fetch(`/api/slots?${params}`);
-    const data = await response.json();
+    const query = new URLSearchParams({ date: dateInput.value, service: selectedService() });
+    let data = null;
+    let response;
+    try {
+      response = await fetch(`${import.meta.env.BASE_URL}api/slots?${query}`);
+      data = await response.json();
+    } catch {
+      times.textContent = 'The online diary is not answering. Call or text 07512 827223.';
+      return;
+    }
     times.innerHTML = '';
-    if (!data.slots?.length) {
-      times.textContent = data.error || 'No free time that day.';
+    if (!response.ok || !data?.slots?.length) {
+      times.textContent = data?.error || (response.ok ? 'No free time that day.' : 'The online diary is not answering. Call or text 07512 827223.');
       return;
     }
     data.slots.forEach((slot) => {
@@ -166,12 +191,19 @@ const preselect = services.some((service) => service.id === Astro.url.searchPara
     }
     status.textContent = 'Saving your booking…';
     const body = Object.fromEntries(new FormData(form));
-    const response = await fetch('/api/book', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
+    let response;
+    let data;
+    try {
+      response = await fetch(`${import.meta.env.BASE_URL}api/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      });
+      data = await response.json();
+    } catch {
+      status.textContent = 'The booking desk is not answering. Call or text 07512 827223.';
+      return;
+    }
     if (!response.ok) {
       status.textContent = data.error || 'That booking did not save.';
       return;

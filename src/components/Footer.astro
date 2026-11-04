@@ -1,5 +1,6 @@
 ---
 import { hoursRows, salon } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 const rows = hoursRows();
 ---
 <footer class="site-footer">
@@ -16,8 +17,8 @@ const rows = hoursRows();
     <a href={salon.mapsUrl}>Google Maps</a>
     · <a href={salon.facebook}>Facebook</a>
     · <a href={salon.tiktok}>TikTok</a>
-    · <a href="/privacy">Privacy</a>
-    · <a href="/book">Book a time</a>
+    · <a href={sitePath('/privacy')}>Privacy</a>
+    · <a href={sitePath('/book')}>Book a time</a>
   </p>
   <p class="fine">Hair salon in Kettering, North Northamptonshire. One chair. Appointments.</p>
 </footer>

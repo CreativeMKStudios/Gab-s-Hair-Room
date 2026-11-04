@@ -1,6 +1,7 @@
 export const prerender = false;
 
 import { createBooking, updateBooking } from '../../lib/booking.js';
+import { sitePath } from '../../lib/paths.js';
 import { createStripeSession } from '../../lib/stripe.js';
 
 const hits = new Map();
@@ -23,7 +24,7 @@ async function readInput(request) {
 
 function html(title, message) {
   return new Response(
-    `<!doctype html><html lang="en-GB"><meta charset="utf-8"><title>${title}</title><body style="font-family:sans-serif;background:#111;color:#fff;padding:2rem"><h1>${title}</h1><p>${message}</p><p><a style="color:#4dff6e" href="/book">Back to booking</a></p></body></html>`,
+    `<!doctype html><html lang="en-GB"><meta charset="utf-8"><title>${title}</title><body style="font-family:sans-serif;background:#111;color:#fff;padding:2rem"><h1>${title}</h1><p>${message}</p><p><a style="color:#4dff6e" href="${sitePath('/book')}">Back to booking</a></p></body></html>`,
     { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }
@@ -50,7 +51,7 @@ export async function POST({ request, clientAddress, url }) {
   }
 
   if (result.booking.payment === 'online') {
-    const stripe = await createStripeSession(result.booking, url.origin);
+    const stripe = await createStripeSession(result.booking, `${url.origin}${import.meta.env.BASE_URL || '/'}`);
     if (stripe.error) {
       await updateBooking(result.booking.id, { status: 'cancelled' });
       if (wantsJson) return Response.json({ ok: false, error: stripe.error }, { status: 400 });
@@ -60,7 +61,7 @@ export async function POST({ request, clientAddress, url }) {
     return Response.redirect(stripe.url, 303);
   }
 
-  const next = `/booking/thanks?ref=${encodeURIComponent(result.booking.id)}`;
+  const next = `${sitePath('/booking/thanks')}?ref=${encodeURIComponent(result.booking.id)}`;
   if (wantsJson) return Response.json({ ok: true, url: next, emailMode: result.booking.emailMode });
   return Response.redirect(next, 303);
 }

@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import { prose } from '../data/copy.js';
 import { salon } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 
 const description =
   "About Gabriella at Gab's hair room, 30 Leicester Close, Kettering. One client at a time, with customer parking by the fence.";
@@ -19,8 +20,8 @@ const description =
       <p>That is Gabi's own line from her Google listing. It is left as she wrote it.</p>
       <p>{prose.aboutVisit}</p>
       <div class="actions">
-        <a class="button" href="/book">Book a time</a>
-        <a class="button ghost" href="/gallery">See the hair</a>
+        <a class="button" href={sitePath('/book')}>Book a time</a>
+        <a class="button ghost" href={sitePath('/gallery')}>See the hair</a>
       </div>
     </article>
   </Header>

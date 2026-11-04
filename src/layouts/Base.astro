@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import { salon } from '../data/salon.js';
+import { absoluteUrl, sitePath } from '../lib/paths.js';
 import { breadcrumbSchema, faqSchema, hairSalonSchema } from '../lib/schema.js';
 
 const {
@@ -12,9 +13,9 @@ const {
   faqs = null,
 } = Astro.props;
 
-const origin = Astro.site?.origin ?? 'https://gabshairroom.co.uk';
-const canonical = new URL(path, origin).href;
-const og = new URL('/og.webp', origin).href;
+const origin = absoluteUrl('/', Astro.site).replace(/\/$/, '');
+const canonical = absoluteUrl(path, Astro.site);
+const og = absoluteUrl('/og.webp', Astro.site);
 const fullTitle = title.includes(salon.name) ? title : `${title} | ${salon.name}`;
 const graphs = [
   hairSalonSchema(origin),
@@ -31,7 +32,7 @@ const json = JSON.stringify(graphs.length === 1 ? graphs[0] : graphs).replace(/<
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <meta name="theme-color" content="#070707" />
     <meta name="geo.region" content="GB-NTH" />
     <meta name="geo.placename" content="Kettering" />

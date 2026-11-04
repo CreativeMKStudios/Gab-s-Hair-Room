@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import { prose } from '../data/copy.js';
 import { formatMinutes, services } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 
 const description =
   "Services at Gab's hair room in Kettering: cuts, colour, highlights, balayage, perms, keratin, braids, updos, kids' cuts, and hair tinsel. Pay in the salon.";
@@ -21,7 +22,7 @@ const description =
             <p>{service.summary}</p>
             <p class="meta">Time held: {formatMinutes(service.minutes)}</p>
             <p class="price-tag">Price: pay in the salon</p>
-            <a href={`/book?service=${service.id}`}>Book {service.name}</a>
+            <a href={sitePath(`/book?service=${service.id}`)}>Book {service.name}</a>
           </article>
         ))}
       </div>

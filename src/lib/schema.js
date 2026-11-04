@@ -1,15 +1,23 @@
 import { salon, services } from '../data/salon.js';
 
+function joinRoot(origin, path) {
+  const root = String(origin).replace(/\/$/, '');
+  if (!path || path === '/') return `${root}/`;
+  let clean = path.startsWith('/') ? path : `/${path}`;
+  if (!clean.includes('.') && !clean.endsWith('/') && !clean.includes('?')) clean += '/';
+  return `${root}${clean}`;
+}
+
 export function hairSalonSchema(origin) {
   return {
     '@context': 'https://schema.org',
     '@type': 'HairSalon',
-    '@id': `${origin}/#salon`,
+    '@id': `${String(origin).replace(/\/$/, '')}/#salon`,
     name: salon.name,
     description:
       "Hair salon in Kettering. Gabriella cuts, colours, highlights, and smooths hair, one client at a time. Customer parking is on site.",
-    image: [`${origin}/og.webp`],
-    url: `${origin}/`,
+    image: [joinRoot(origin, '/og.webp')],
+    url: joinRoot(origin, '/'),
     telephone: salon.phoneTel,
     email: salon.email,
     currenciesAccepted: 'GBP',
@@ -57,7 +65,7 @@ export function hairSalonSchema(origin) {
           name: service.name,
           description: service.summary,
           areaServed: 'Kettering',
-          provider: { '@id': `${origin}/#salon` },
+          provider: { '@id': `${String(origin).replace(/\/$/, '')}/#salon` },
         },
       })),
     },
@@ -72,7 +80,7 @@ export function breadcrumbSchema(origin, items) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: new URL(item.path, origin).href,
+      item: joinRoot(origin, item.path),
     })),
   };
 }

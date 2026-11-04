@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
+import { absoluteUrl } from '../lib/paths.js';
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = (site ?? 'https://gabshairroom.co.uk').toString().replace(/\/$/, '');
-  return new Response(`User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap-index.xml\n`, {
+  const sitemap = absoluteUrl('/sitemap-index.xml', site ?? 'https://gabshairroom.co.uk');
+  return new Response(`User-agent: *\nAllow: /\n\nSitemap: ${sitemap}\n`, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
 };

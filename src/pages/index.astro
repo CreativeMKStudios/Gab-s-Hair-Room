@@ -7,6 +7,7 @@ import hero from '../assets/gallery/burgundy-straight.webp';
 import { faqs, prose } from '../data/copy.js';
 import { reviews } from '../data/reviews.js';
 import { formatMinutes, hoursRows, services } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 
 const hours = hoursRows();
 const topReviews = reviews.slice(0, 3);
@@ -46,7 +47,7 @@ const description =
           <path d="M22 36c3.5 6 16.5 6 20 0" fill="none" stroke="#4dff6e" stroke-width="3" stroke-linecap="round"></path>
         </svg>
       </figure>
-      <a class="badge" href="/book">
+      <a class="badge" href={sitePath('/book')}>
         <svg viewBox="0 0 140 140" role="img" aria-label="Book now">
           <path fill="#4dff6e" d="M70.0 12.0 L85.8 21.5 L104.1 23.1 L111.3 40.0 L125.2 52.1 L121.0 70.0 L125.2 87.9 L111.3 100.0 L104.1 116.9 L85.8 118.5 L70.0 128.0 L54.2 118.5 L35.9 116.9 L28.7 100.0 L14.8 87.9 L19.0 70.0 L14.8 52.1 L28.7 40.0 L35.9 23.1 L54.2 21.5 L70.0 12.0 Z"></path>
           <text x="70" y="74" text-anchor="middle" fill="#08210e">BOOK NOW</text>
@@ -61,8 +62,8 @@ const description =
     <p>{prose.homeNext}</p>
     <p>{prose.homeHours}</p>
     <div class="actions">
-      <a class="button" href="/book">Book a time</a>
-      <a class="button ghost" href="/services">See the services</a>
+      <a class="button" href={sitePath('/book')}>Book a time</a>
+      <a class="button ghost" href={sitePath('/services')}>See the services</a>
     </div>
 
     <Photos files={['teal-curls', 'tinsel-braid', 'parking-sign']} />
@@ -89,7 +90,7 @@ const description =
         </article>
       ))}
     </div>
-    <p><a href="/reviews">Read all the written reviews</a></p>
+    <p><a href={sitePath('/reviews')}>Read all the written reviews</a></p>
 
     <h2>Hours</h2>
     <div class="hours">

@@ -8,8 +8,9 @@ export async function createStripeSession(booking, origin) {
 
   const body = new URLSearchParams();
   body.set('mode', 'payment');
-  body.set('success_url', `${origin}/booking/thanks?ref=${encodeURIComponent(booking.id)}&session_id={CHECKOUT_SESSION_ID}`);
-  body.set('cancel_url', `${origin}/book?payment=cancelled`);
+  const root = String(origin).replace(/\/$/, '');
+  body.set('success_url', `${root}/booking/thanks/?ref=${encodeURIComponent(booking.id)}&session_id={CHECKOUT_SESSION_ID}`);
+  body.set('cancel_url', `${root}/book/?payment=cancelled`);
   body.set('customer_email', booking.email);
   body.set('client_reference_id', booking.id);
   body.set('metadata[bookingId]', booking.id);

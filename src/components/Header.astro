@@ -1,4 +1,5 @@
 ---
+import { sitePath } from '../lib/paths.js';
 const { path } = Astro.props;
 const links = [
   ['/', 'Home'],
@@ -13,19 +14,19 @@ const columns = [links.slice(0, 3), links.slice(3, 5), links.slice(5)];
 <div class="frame page-frame">
   <header>
   <nav class="nav" aria-label="Main">
-    <a class="brand" href="/">Gab's hair room</a>
+    <a class="brand" href={sitePath('/')}>Gab's hair room</a>
     <input class="nav-toggle" id="nav-toggle" type="checkbox" />
     <label class="nav-button" for="nav-toggle">Menu</label>
     <div class="nav-panel" id="site-nav">
       {columns.map((column) => (
         <div>
           {column.map(([href, label]) => (
-            <a href={href} aria-current={path === href ? 'page' : undefined}>{label}</a>
+            <a href={sitePath(href)} aria-current={path === href ? 'page' : undefined}>{label}</a>
           ))}
         </div>
       ))}
     </div>
-    <a class="nav-book" href="/book">Book</a>
+    <a class="nav-book" href={sitePath('/book')}>Book</a>
   </nav>
   </header>
   <slot />

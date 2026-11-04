@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import { prose } from '../data/copy.js';
 import { hoursRows, salon } from '../data/salon.js';
+import { sitePath } from '../lib/paths.js';
 const hours = hoursRows();
 const description =
   "Contact Gab's hair room at 30 Leicester Close, Kettering, NN16 8EZ. Call 07512 827223 or send a message.";
@@ -40,7 +41,7 @@ const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(`${salon.str
             ))}
           </div>
         </div>
-        <form class="note" method="post" action="/api/contact">
+        <form class="note" method="post" action={sitePath('/api/contact')}>
           <p id="form-status" class="meta" role="status"></p>
           <label>
             <span>Your name</span>
@@ -76,13 +77,13 @@ const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(`${salon.str
     event.preventDefault();
     status.textContent = 'Sending…';
     const body = Object.fromEntries(new FormData(form));
-    const response = await fetch('/api/contact', {
+    const response = await fetch(`${import.meta.env.BASE_URL}api/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(body),
     });
-    const data = await response.json();
-    status.textContent = data.message || data.error || 'Try again, or call the salon.';
+    const data = await response.json().catch(() => null);
+    status.textContent = data?.message || data?.error || 'That did not send. Call or text 07512 827223.';
     if (response.ok) form.reset();
   });
 </script>

@@ -3,6 +3,7 @@ export const prerender = false;
 import fs from 'node:fs';
 import path from 'node:path';
 import { deliver } from '../../lib/mail.js';
+import { sitePath } from '../../lib/paths.js';
 import { salon } from '../../data/salon.js';
 
 const hits = new Map();
@@ -74,7 +75,7 @@ export async function POST({ request, clientAddress }) {
   const wantsJson = (request.headers.get('accept') || '').includes('application/json');
   if (wantsJson) return Response.json({ ok: true, message: note, emailMode: emailResult.mode });
   return new Response(
-    `<!doctype html><html lang="en-GB"><meta charset="utf-8"><title>Message sent</title><body style="font-family:sans-serif;background:#111;color:#fff;padding:2rem"><h1>Message received</h1><p>${note}</p><p><a style="color:#4dff6e" href="/contact">Back</a></p></body></html>`,
+    `<!doctype html><html lang="en-GB"><meta charset="utf-8"><title>Message sent</title><body style="font-family:sans-serif;background:#111;color:#fff;padding:2rem"><h1>Message received</h1><p>${note}</p><p><a style="color:#4dff6e" href="${sitePath('/contact')}">Back</a></p></body></html>`,
     { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }
