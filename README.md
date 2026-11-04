@@ -14,7 +14,7 @@ npm run dev
 
 `npm run build` then `npm run preview` serves the production build. Booking and contact emails need the Node server. A static host alone cannot send them.
 
-The public pages are published from `main` by GitHub Actions to https://creativemkstudios.github.io/Gab-s-Hair-Room/ . That host has no Node server, so the diary and the contact form there tell people to call or text 07512 827223. Card payments and confirmation emails start working when this same build is run on a Node host with the variables below. Set `SITE` to the public origin and `BASE` to `/` on that host.
+GitHub Actions on `main` builds the static pages for https://creativemkstudios.github.io/Gab-s-Hair-Room/ . A repo admin has to turn on GitHub Pages (Settings, Pages, GitHub Actions) before that address goes live. That host has no Node server, so the diary and the contact form there tell people to call or text 07512 827223. Card payments and confirmation emails start working when this same build is run on a Node host with the variables below. Set `SITE` to the public origin and `BASE` to `/` on that host.
 
 ## Email and card payments
 

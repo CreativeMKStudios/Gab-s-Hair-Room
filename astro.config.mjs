@@ -8,7 +8,6 @@ const base = process.env.BASE || '/';
 export default defineConfig({
   site,
   base,
-  trailingSlash: 'always',
   output: 'static',
   adapter: node({ mode: 'standalone' }),
   integrations: [
