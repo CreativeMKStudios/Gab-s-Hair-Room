@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Photos from '../components/Photos.astro';
+import { prose } from '../data/copy.js';
+
+const description =
+  "Photos from the Google profile of Gab's hair room in Kettering. Colour, curls, tinsel, keratin, the salon, and the parking sign.";
+---
+<Base title="Gallery" description={description} path="/gallery" crumbs={[{ name: 'Gallery', path: '/gallery' }]}>
+  <Header path="/gallery">
+    <article class="prose">
+      <h1>Gallery</h1>
+      <p>{prose.galleryIntro}</p>
+      <Photos priority />
+    </article>
+  </Header>
+</Base>
