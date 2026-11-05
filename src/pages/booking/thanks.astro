@@ -8,7 +8,7 @@ import { salon } from '../../data/salon.js';
 
 const ref = Astro.url.searchParams.get('ref') || '';
 const sessionId = Astro.url.searchParams.get('session_id') || '';
-let booking = ref ? getBooking(ref) : null;
+let booking = ref ? await getBooking(ref) : null;
 if (booking && sessionId) {
   const session = await fetchStripeSession(sessionId);
   booking = (await confirmOnlinePayment(booking.id, session)) ?? booking;

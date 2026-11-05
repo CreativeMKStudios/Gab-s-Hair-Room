@@ -46,11 +46,23 @@ export async function POST({ request, clientAddress }) {
     return Response.json({ ok: false, error: 'Add your name, a real email, a phone number, and a short message.' }, { status: 400 });
   }
 
-  const file = path.join(process.cwd(), 'data', 'messages.json');
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const existing = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
-  existing.push({ name, email, phone, message, at: new Date().toISOString() });
-  fs.writeFileSync(file, JSON.stringify(existing, null, 2));
+  const record = { name, email, phone, message, at: new Date().toISOString() };
+  let stored = false;
+  try {
+    if (process.env.DATABASE_URL) {
+      const { insertMessage } = await import('../../lib/db.js');
+      await insertMessage(record);
+    } else {
+      const file = path.join(process.cwd(), 'data', 'messages.json');
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      const existing = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+      existing.push(record);
+      fs.writeFileSync(file, JSON.stringify(existing, null, 2));
+    }
+    stored = true;
+  } catch {
+    stored = false;
+  }
 
   const salonEmail = process.env.SALON_EMAIL || salon.email;
   const emailResult = await deliver([
@@ -71,7 +83,9 @@ export async function POST({ request, clientAddress }) {
   const sent = emailResult.results.every((item) => item.ok);
   const note = sent
     ? 'Your message is on its way to you and to Gabi.'
-    : `Your message is saved, but email is not leaving this server yet. Please also text ${salon.phoneDisplay}.`;
+    : stored
+      ? `Your message is saved, but email is not leaving this server yet. Please also text ${salon.phoneDisplay}.`
+      : `Email is not leaving this server yet. Please text ${salon.phoneDisplay}.`;
   const wantsJson = (request.headers.get('accept') || '').includes('application/json');
   if (wantsJson) return Response.json({ ok: true, message: note, emailMode: emailResult.mode });
   return new Response(

@@ -1,15 +1,19 @@
 import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 import sitemap from '@astrojs/sitemap';
 
-const site = process.env.SITE || 'https://gabshairroom.co.uk';
+const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+const site =
+  process.env.SITE ||
+  (vercelHost ? `https://${String(vercelHost).replace(/^https?:\/\//, '')}` : 'https://gabshairroom.co.uk');
 const base = process.env.BASE || '/';
 
 export default defineConfig({
   site,
   base,
   output: 'static',
-  adapter: node({ mode: 'standalone' }),
+  adapter: process.env.VERCEL ? vercel() : node({ mode: 'standalone' }),
   integrations: [
     sitemap({
       filter: (page) => !page.includes('/booking/thanks'),

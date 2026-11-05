@@ -11,9 +11,11 @@
   "dependencies": {
     "@astrojs/node": "^11.1.9",
     "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/vercel": "^11.0.18",
     "@fontsource/bebas-neue": "^5.3.0",
     "@fontsource/source-sans-3": "^5.3.1",
     "astro": "^7.4.5",
-    "nodemailer": "^10.3.1"
+    "nodemailer": "^10.3.1",
+    "pg": "^8.23.1"
   }
 }
