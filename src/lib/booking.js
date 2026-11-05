@@ -191,9 +191,26 @@ export function validateBooking(input, bookings, now = new Date()) {
   };
 }
 
+export async function loadBookings() {
+  if (!process.env.DATABASE_URL) return readBookings();
+  const { readBookingRows } = await import('./db.js');
+  return readBookingRows();
+}
+
+function mutateBookings(mutator) {
+  if (!process.env.DATABASE_URL) {
+    return withLock(async () => {
+      const bookings = readBookings();
+      const result = await mutator(bookings);
+      writeBookings(bookings);
+      return result;
+    });
+  }
+  return import('./db.js').then(({ withBookingTransaction }) => withBookingTransaction(mutator));
+}
+
 export function createBooking(input, now = new Date()) {
-  return withLock(async () => {
-    const bookings = readBookings();
+  return mutateBookings(async (bookings) => {
     const result = validateBooking(input, bookings, now);
     if (!result.ok) return { ok: false, status: 400, error: result.error };
 
@@ -204,33 +221,29 @@ export function createBooking(input, now = new Date()) {
       const email = await deliver(bookingMessages(booking));
       booking.emailsSent = email.results.every((item) => item.ok);
       booking.emailMode = email.mode;
-      writeBookings(bookings);
       return { ok: true, status: 200, booking, email };
     }
 
-    writeBookings(bookings);
     return { ok: true, status: 200, booking, email: null };
   });
 }
 
 export function updateBooking(id, patch) {
-  return withLock(async () => {
-    const bookings = readBookings();
+  return mutateBookings(async (bookings) => {
     const booking = bookings.find((item) => item.id === id);
     if (!booking) return null;
     Object.assign(booking, patch);
-    writeBookings(bookings);
     return booking;
   });
 }
 
-export function getBooking(id) {
-  return readBookings().find((item) => item.id === id) ?? null;
+export async function getBooking(id) {
+  const bookings = await loadBookings();
+  return bookings.find((item) => item.id === id) ?? null;
 }
 
 export function confirmOnlinePayment(id, session) {
-  return withLock(async () => {
-    const bookings = readBookings();
+  return mutateBookings(async (bookings) => {
     const booking = bookings.find((item) => item.id === id);
     if (!booking || !session) return booking ?? null;
     const sameBooking = session.metadata?.bookingId === booking.id || session.client_reference_id === booking.id;
@@ -245,7 +258,6 @@ export function confirmOnlinePayment(id, session) {
       booking.emailsSent = email.results.every((item) => item.ok);
       booking.emailMode = email.mode;
     }
-    writeBookings(bookings);
     return booking;
   });
 }

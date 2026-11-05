@@ -6,11 +6,15 @@ function outboxDir() {
 }
 
 function writeOutbox(messages, note) {
-  const dir = outboxDir();
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.json`);
-  fs.writeFileSync(file, JSON.stringify({ note, messages, savedAt: new Date().toISOString() }, null, 2));
-  return file;
+  try {
+    const dir = outboxDir();
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.json`);
+    fs.writeFileSync(file, JSON.stringify({ note, messages, savedAt: new Date().toISOString() }, null, 2));
+    return file;
+  } catch {
+    return null;
+  }
 }
 
 async function sendResend(message) {
